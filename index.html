@@ -1,0 +1,179 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      display: flex;
+      height: 100vh;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+      flex-direction: column;
+    }
+    .history {
+      background: #1a1f24;
+      padding: 10px;
+      font-size: 0.9em;
+      overflow-y: auto;
+      flex: 1;
+      border-left: 2px solid #f97316;
+    }
+    .display {
+      background: #1a1f24;
+      padding: 20px;
+      text-align: right;
+      font-size: 2em;
+      border-bottom: 2px solid #f97316;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      padding: 10px;
+    }
+    button {
+      padding: 20px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 8px;
+      background: #1a1f24;
+      color: #e6edf3;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #2d333d;
+    }
+    button.operator {
+      background: #f97316;
+      color: #0d1117;
+    }
+    button.operator:hover {
+      background: #d946ef;
+    }
+    button.clear {
+      background: #f97316;
+      color: #0d1117;
+    }
+    button.clear:hover {
+      background: #d946ef;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="display" id="display">0</div>
+    <div class="history" id="history"></div>
+    <div class="buttons">
+      <button onclick="clearDisplay()" class="clear">C</button>
+      <button onclick="backspace()">⌫</button>
+      <button onclick="appendOperator('/')" class="operator">÷</button>
+      <button onclick="appendOperator('*')" class="operator">×</button>
+      <button onclick="appendNumber('7')">7</button>
+      <button onclick="appendNumber('8')">8</button>
+      <button onclick="appendNumber('9')">9</button>
+      <button onclick="appendOperator('-')" class="operator">−</button>
+      <button onclick="appendNumber('4')">4</button>
+      <button onclick="appendNumber('5')">5</button>
+      <button onclick="appendNumber('6')">6</button>
+      <button onclick="appendOperator('+')" class="operator">+</button>
+      <button onclick="appendNumber('1')">1</button>
+      <button onclick="appendNumber('2')">2</button>
+      <button onclick="appendNumber('3')">3</button>
+      <button onclick="calculate()" class="operator">=</button>
+      <button onclick="appendNumber('0')">0</button>
+      <button onclick="appendNumber('.')">.</button>
+    </div>
+  </div>
+  <script>
+    const display = document.getElementById('display');
+    const history = document.getElementById('history');
+    let currentInput = '0';
+    let previousInput = '';
+    let operation = null;
+
+    function updateDisplay() {
+      display.textContent = currentInput;
+    }
+
+    function appendNumber(num) {
+      if (currentInput === '0') currentInput = num;
+      else currentInput += num;
+      updateDisplay();
+    }
+
+    function appendOperator(op) {
+      if (currentInput === '') return;
+      if (previousInput === '') {
+        previousInput = currentInput;
+        currentInput = '';
+        operation = op;
+      } else {
+        calculate();
+        operation = op;
+      }
+    }
+
+    function calculate() {
+      let result;
+      const prev = parseFloat(previousInput);
+      const current = parseFloat(currentInput);
+      if (isNaN(prev) || isNaN(current)) return;
+      switch (operation) {
+        case '+': result = prev + current; break;
+        case '-': result = prev - current; break;
+        case '*': result = prev * current; break;
+        case '/': result = prev / current; break;
+        default: return;
+      }
+      currentInput = result.toString();
+      previousInput = '';
+      operation = null;
+      updateDisplay();
+      addHistory(`${previousInput} ${operation} ${currentInput} = ${result}`);
+    }
+
+    function clearDisplay() {
+      currentInput = '0';
+      previousInput = '';
+      operation = null;
+      updateDisplay();
+    }
+
+    function backspace() {
+      currentInput = currentInput.slice(0, -1) || '0';
+      updateDisplay();
+    }
+
+    function addHistory(text) {
+      const entry = document.createElement('div');
+      entry.textContent = text;
+      history.appendChild(entry);
+      history.scrollTop = history.scrollHeight;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const key = e.key;
+      if (/^[0-9]$/.test(key)) appendNumber(key);
+      if (key === '.') appendNumber('.');
+      if (key === '+' || key === '-' || key === '*' || key === '/') appendOperator(key);
+      if (key === 'Enter' || key === '=') calculate();
+      if (key === 'Backspace') backspace();
+      if (key === 'c' || key === 'C') clearDisplay();
+    });
+
+    updateDisplay();
+  </script>
+</body>
+</html>
